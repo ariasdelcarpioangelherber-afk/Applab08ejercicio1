@@ -37,7 +37,7 @@ fun TaskScreen(viewModel: TaskViewModel) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tareas Simples 📝") },
+                title = { Text("Mi APP Para  Gestionar mis tareas") },
                 actions = {
                     IconButton(onClick = { showMenu = true }) {
                         Icon(Icons.Filled.MoreVert, contentDescription = "Menú de opciones")
@@ -102,7 +102,7 @@ fun FilterBar(currentFilter: TaskFilter, onFilterChange: (TaskFilter) -> Unit) {
     ) {
         TaskFilter.entries.forEach { filter ->
             FilterButton(
-                text = filter.name.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+                text = filter.displayName,
                 isSelected = currentFilter == filter,
                 onClick = { onFilterChange(filter) }
             )

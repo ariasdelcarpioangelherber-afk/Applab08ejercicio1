@@ -12,8 +12,11 @@ import kotlinx.coroutines.launch
 import com.example.lab08ejercicio1.Task
 import com.example.lab08ejercicio1.TaskDao
 
-enum class TaskFilter { ALL, PENDING, COMPLETED }
-
+enum class TaskFilter(val displayName: String) {
+    ALL("Todas"),
+    PENDING("Pendientes"),
+    COMPLETED("Completadas")
+}
 class TaskViewModel(private val dao: TaskDao) : ViewModel() {
 
     private val _allTasks = MutableStateFlow<List<Task>>(emptyList())
