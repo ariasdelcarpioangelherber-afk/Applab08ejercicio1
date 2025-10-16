@@ -24,7 +24,14 @@ import androidx.compose.material.icons.filled.Add
 import com.example.lab08ejercicio1.Task
 import com.example.lab08ejercicio1.viewmodel.TaskViewModel
 import com.example.lab08ejercicio1.viewmodel.TaskFilter
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.foundation.BorderStroke
 
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.text.BasicTextField
+
+import androidx.compose.material3.SmallFloatingActionButton
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskScreen(viewModel: TaskViewModel) {
@@ -112,11 +119,20 @@ fun FilterBar(currentFilter: TaskFilter, onFilterChange: (TaskFilter) -> Unit) {
 
 @Composable
 fun FilterButton(text: String, isSelected: Boolean, onClick: () -> Unit) {
-    Button(
+    OutlinedButton( // Usamos OutlinedButton para un aspecto más limpio
         onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.LightGray
-        )
+        colors = ButtonDefaults.outlinedButtonColors(
+            // El color de contenido es el primario si está seleccionado, de lo contrario, el color por defecto.
+            contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+            // El color del contenedor (fondo) es el primario si está seleccionado, de lo contrario, transparente.
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+        ),
+        border = BorderStroke( // Borde más sutil
+            1.dp,
+            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+        ),
+        // Relleno horizontal más reducido para que se vea más compacto
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Text(text)
     }
@@ -124,31 +140,45 @@ fun FilterButton(text: String, isSelected: Boolean, onClick: () -> Unit) {
 
 @Composable
 fun TaskItemRow(task: Task, viewModel: TaskViewModel) {
-    Row(
+    // Usamos Card para darle una ligera elevación y bordes redondeados
+    Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
+        onClick = { viewModel.toggleTaskCompletion(task) }
     ) {
-        Checkbox(
-            checked = task.isCompleted,
-            onCheckedChange = { viewModel.toggleTaskCompletion(task) }
-        )
 
-        Text(
-            text = task.description,
-            modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
-            style = if (task.isCompleted) {
-                TextStyle(textDecoration = TextDecoration.LineThrough, color = Color.Gray)
-            } else {
-                TextStyle.Default
-            }
-        )
+        ListItem(
 
-        // Botón para ELIMINAR INDIVIDUALMENTE
-        IconButton(onClick = { viewModel.deleteTask(task) }) {
-            Icon(Icons.Filled.Delete, contentDescription = "Eliminar tarea")
-        }
+            headlineContent = {
+                Text(
+                    text = task.description,
+                    style = if (task.isCompleted) {
+                        TextStyle(textDecoration = TextDecoration.LineThrough, color = Color.Gray)
+                    } else {
+                        TextStyle.Default
+                    }
+                )
+            },
+
+            leadingContent = {
+                Checkbox(
+                    checked = task.isCompleted,
+                    onCheckedChange = { viewModel.toggleTaskCompletion(task) }
+                )
+            },
+
+            trailingContent = {
+                IconButton(onClick = { viewModel.deleteTask(task) }) {
+                    Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = "Eliminar tarea",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            colors = ListItemDefaults.colors(containerColor = Color.White)
+        )
     }
 }
 @Composable
@@ -157,29 +187,42 @@ fun AddOrEditTaskField(
     onDescriptionChange: (String) -> Unit,
     onAddClick: () -> Unit
 ) {
-    val isEnabled = description.isNotEmpty() // Variable de control
+    val isEnabled = description.isNotEmpty()
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .background(MaterialTheme.colorScheme.surfaceContainerLow, shape = MaterialTheme.shapes.extraLarge)
+            .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        TextField(
+
+        BasicTextField(
             value = description,
             onValueChange = onDescriptionChange,
-            label = { Text("Nueva tarea...") },
-            modifier = Modifier.weight(1f),
-            singleLine = true
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 8.dp),
+            singleLine = true,
+            decorationBox = { innerTextField ->
+                if (description.isEmpty()) {
+                    Text("Nueva tarea...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                innerTextField()
+            }
         )
-        Spacer(Modifier.width(8.dp))
 
 
-        FloatingActionButton(
+        SmallFloatingActionButton(
             onClick = { if (isEnabled) onAddClick() },
-            containerColor = if (isEnabled) MaterialTheme.colorScheme.primary else Color.LightGray.copy(alpha = 0.6f)
+            containerColor = if (isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh
         ) {
-            Icon(Icons.Filled.Add, contentDescription = "Agregar")
+            Icon(
+                Icons.Filled.Add,
+                contentDescription = "Agregar",
+                tint = if (isEnabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
